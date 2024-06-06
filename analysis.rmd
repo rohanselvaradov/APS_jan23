@@ -1,0 +1,116 @@
+```{r setup, include=FALSE}
+library(haven)
+library(tidyverse)
+
+df <- read_dta("survey_data/survey.dta")
+
+print_labels_for_all_columns <- function(data_frame) {
+  for (colname in names(df)) {
+    # Check if the column is a labelled vector
+    if ("haven_labelled" %in% class(df[[colname]])) {
+      # Get the variable label
+      var_label <- attr(df[[colname]], "label")
+      if (!is.null(var_label)) {
+        cat("Variable name:", colname, "\n")
+        cat("Variable label:", var_label, "\n")
+      } else {
+        cat("Variable name:", colname, "has no label.\n")
+      }
+
+      # Get value labels
+      val_labels <- levels(haven::as_factor(df[[colname]]))
+      if (length(val_labels) > 0) {
+        cat("Value labels:\n")
+        print(val_labels)
+      } else {
+        cat("No value labels.\n")
+      }
+    } else {
+      # This column is not a labelled vector
+      cat("Column", colname, "is not a labelled vector.\n")
+    }
+    cat("\n") # Add a newline for readability between columns
+  }
+}
+
+# Call the function
+# print_labels_for_all_columns(df)
+```
+```{r cleaning, include=FALSE}
+df <- df %>%
+  filter(agecat == 1) %>%
+  select(
+    agecat, Q1, Q3, contains("Q4"), Q5, Q6, Q9, Q10, Q13, Q14, Q15, Q17,
+    Q21d, Q21e, Q21f, Q21g,
+    Q24, Q25, gender, ppeducat, ppeduc5, ppethm, ppinc7,
+    ppmarit5, xparty4, urb_sub_rur, xurbanicity, pppa1648,
+    ppp20071, ppp20072, partyid4, pppa_lgb, income6cat,
+    party, marit3, parent, ideocat3
+  )
+
+
+question_labels <- list(
+  Q4a = "Enjoy being single more",
+  Q4b = "People aren't interested in me",
+  Q4c = "Nobody meets my expectations",
+  Q4d = "Difficult to meet people",
+  Q4e = "Ended a relationship recently",
+  Q4f = "More important priorities",
+  Q21d = "Difficult for men and women to be friends",
+  Q21e = "Fewer single men interested in marriage",
+  Q21f = "Fewer single women interested in marriage",
+  Q21g = "Marriage is out of date"
+)
+
+
+plot_question_by_gender <- function(df, question_column, title = NULL) {
+  # Ensure the question column and gender column are treated as factors
+  data <- df %>%
+    select({{ question_column }}, "gender") %>%
+    filter(!is.na(.[[question_column]])) %>%
+    as_factor()
+
+  # Use the provided title or default to the column's label attribute
+  plot_title <- if (!is.null(title)) title else attr(data[[question_column]], "label")
+
+  # Generate the plot
+  data %>%
+    ggplot(aes(x = !!sym(question_column), fill = gender)) +
+    geom_bar(position = "dodge") +
+    scale_fill_manual(values = c("Female" = "red", "Male" = "blue")) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = plot_title)
+}
+
+plot_question_set_by_gender <- function(df, question_prefix) {
+  df %>%
+    select(contains(question_prefix), gender) %>%
+    as_factor() %>%
+    mutate(across(where(is.character), as_factor)) %>%
+    pivot_longer(cols = contains(question_prefix), names_to = "Question", values_to = "Response", values_drop_na = TRUE) %>%
+    mutate(Question = map_chr(Question, ~ question_labels[[.]])) %>%
+    ggplot(aes(x = Response, fill = gender)) +
+    geom_bar(position = "dodge", na.rm = TRUE) +
+    facet_wrap(~Question, scales = "free_x") +
+    scale_fill_manual(values = c("Female" = "red", "Male" = "blue")) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank()
+    )
+}
+```
+
+```{r plots}
+plot_question_by_gender(df, "Q1")
+plot_question_by_gender(df, "Q3")
+plot_question_set_by_gender(df, "Q4")
+plot_question_by_gender(df, "Q13")
+plot_question_by_gender(df, "Q14")
+plot_question_by_gender(df, "Q15")
+plot_question_by_gender(df, "Q17")
+plot_question_set_by_gender(df, "Q21")
+plot_question_by_gender(df, "Q24")
+plot_question_by_gender(df, "Q25")
+```
