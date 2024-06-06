@@ -2,7 +2,7 @@
 library(haven)
 library(tidyverse)
 
-df <- read_dta("survey_data/survey.dta")
+df <- read_dta("survey.dta")
 
 print_labels_for_all_columns <- function(data_frame) {
   for (colname in names(df)) {
