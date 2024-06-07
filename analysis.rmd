@@ -1,7 +1,14 @@
 ---
 title: "Dating survey analysis"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
 author: Rohan Selva-Radov
+date: "2024-06-07"
 ---
 
 Data are from the [2023 American Perspectives Survey](https://www.americansurveycenter.org/download/january-2023-american-perspectives-survey/).
@@ -185,22 +192,24 @@ plot_question_set_by_gender_stacked <- function(df, question_prefix, title = NUL
 
 **For all of the following, we pre-filter to only consider respondents in the 18-29 age group.**
 
+I present all the graphs first stacked by gender to allow comparisons more easily,
+and then the identical analyses side-by-side to visualise distributions better. 
+
+## Stacked bar plots
 I think the first question is strangely worded -- if I were dating someone
 but it's not a "committed" relationship, I probably wouldn't say that I was "Single
 or not currently in a relationship",
 but I wouldn't fit into the "In a committed relationship, but not living together" 
 category either.
 
-```{r plots1, fig.width=8, fig.height=6, out.width='80%'}
-plot_question_by_gender(df, "Q1")
+```{r plots1a, fig.width=8, fig.height=6, out.width='80%'}
 plot_question_by_gender_stacked(df, "Q1")
 ```
 
 The next question is only asked to respondents who said
 they were single or not in a relationship.
 
-```{r plots2, fig.width=8, fig.height=6, out.width='80%'}
-plot_question_by_gender(df, "Q3")
+```{r plots2a, fig.width=8, fig.height=6, out.width='80%'}
 plot_question_by_gender_stacked(df, "Q3")
 ```
 
@@ -208,33 +217,70 @@ The next question is only asked to respondents who
 said they were single or not in a relationship, and additionally
 are not casually dating anybody.
 
-``` {r plots3, fig.width=8, fig.height=6, out.width='80%'}
-plot_question_set_by_gender(df, "Q4", "Please indicate if each of the following is a reason or not a reason why you are not currently looking for a relationship or dates")
+``` {r plots3a, fig.width=8, fig.height=6, out.width='80%'}
 plot_question_set_by_gender_stacked(df, "Q4", "Please indicate if each of the following is a reason or not a reason why you are not currently looking for a relationship or dates")
-plot_question_by_gender(df, "Q13", "Even if you are not currently using an online dating site or a dating app, have you ever used an online dating site or a dating app?")
 plot_question_by_gender_stacked(df, "Q13", "Even if you are not currently using an online dating site or a dating app, have you ever used an online dating site or a dating app?")
 ```
 
 The next two questions are only asked to respondents who said
 they had at some point used an online dating site or app.
 
-```{r plots4, fig.width=8, fig.height=6, out.width='80%'}
-plot_question_by_gender(df, "Q14", "Have you ever gone on a date with someone who you met through an online dating website or  dating app?")
+```{r plots4a, fig.width=8, fig.height=6, out.width='80%'}
 plot_question_by_gender_stacked(df, "Q14", "Have you ever gone on a date with someone who you met through an online dating website or  dating app?")
-plot_question_by_gender(df, "Q15", "Overall, would you say your OWN personal experiences with online dating sites or dating apps have been…")
 plot_question_by_gender_stacked(df, "Q15", "Overall, would you say your OWN personal experiences with online dating sites or dating apps have been…")
-plot_question_by_gender(df, "Q17", "When it comes to dating today, do you think it is...")
 plot_question_by_gender_stacked(df, "Q17", "When it comes to dating today, do you think it is...")
-plot_question_set_by_gender(df, "Q21", "Read each statement and please say whether you agree or disagree with each one")
 plot_question_set_by_gender_stacked(df, "Q21", "Read each statement and please say whether you agree or disagree with each one")
-plot_question_by_gender(df, "Q24")
 plot_question_by_gender_stacked(df, "Q24")
 
 ```
 
 The next question is only asked to respondents who said they were not straight/heterosexual.
 
-```{r plots5, fig.width=8, fig.height=6, out.width='80%'}
-plot_question_by_gender(df, "Q25", "How important is being [LESBIAN OR GAY/BISEXUAL/QUEER/ASEXUAL OR AROMANTIC] to you?")
+```{r plots5a, fig.width=8, fig.height=6, out.width='80%'}
 plot_question_by_gender_stacked(df, "Q25", "How important is being [LESBIAN OR GAY/BISEXUAL/QUEER/ASEXUAL OR AROMANTIC] to you?")
+```
+
+## Side-by-side bar plots
+I think the first question is strangely worded -- if I were dating someone
+but it's not a "committed" relationship, I probably wouldn't say that I was "Single
+or not currently in a relationship",
+but I wouldn't fit into the "In a committed relationship, but not living together" 
+category either.
+
+```{r plots1b, fig.width=8, fig.height=6, out.width='80%'}
+plot_question_by_gender(df, "Q1")
+```
+
+The next question is only asked to respondents who said
+they were single or not in a relationship.
+
+```{r plots2b, fig.width=8, fig.height=6, out.width='80%'}
+plot_question_by_gender(df, "Q3")
+```
+
+The next question is only asked to respondents who 
+said they were single or not in a relationship, and additionally
+are not casually dating anybody.
+
+``` {r plots3b, fig.width=8, fig.height=6, out.width='80%'}
+plot_question_set_by_gender(df, "Q4", "Please indicate if each of the following is a reason or not a reason why you are not currently looking for a relationship or dates")
+plot_question_by_gender(df, "Q13", "Even if you are not currently using an online dating site or a dating app, have you ever used an online dating site or a dating app?")
+```
+
+The next two questions are only asked to respondents who said
+they had at some point used an online dating site or app.
+
+```{r plots4b, fig.width=8, fig.height=6, out.width='80%'}
+plot_question_by_gender(df, "Q14", "Have you ever gone on a date with someone who you met through an online dating website or  dating app?")
+plot_question_by_gender(df, "Q15", "Overall, would you say your OWN personal experiences with online dating sites or dating apps have been…")
+plot_question_by_gender(df, "Q17", "When it comes to dating today, do you think it is...")
+plot_question_set_by_gender(df, "Q21", "Read each statement and please say whether you agree or disagree with each one")
+plot_question_by_gender(df, "Q24")
+
+```
+
+The next question is only asked to respondents who said they were not straight/heterosexual.
+
+```{r plots5b, fig.width=8, fig.height=6, out.width='80%'}
+plot_question_by_gender(df, "Q25", "How important is being [LESBIAN OR GAY/BISEXUAL/QUEER/ASEXUAL OR AROMANTIC] to you?")
 ```
