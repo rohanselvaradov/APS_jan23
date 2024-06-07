@@ -1,3 +1,12 @@
+---
+title: "Dating survey analysis"
+output: html_document
+author: Rohan Selva-Radov
+---
+
+Data are from the [2023 American Perspectives Survey](https://www.americansurveycenter.org/download/january-2023-american-perspectives-survey/).
+Full GitHub repository is [here](https://github.com/rohanselvaradov/APS_jan23).
+
 ```{r setup, include=FALSE}
 library(haven)
 library(tidyverse)
@@ -56,9 +65,9 @@ question_labels <- list(
   Q4d = "Difficult to meet people",
   Q4e = "Ended a relationship recently",
   Q4f = "More important priorities",
-  Q21d = "Difficult for men and women to be friends",
-  Q21e = "Fewer single men interested in marriage",
-  Q21f = "Fewer single women interested in marriage",
+  Q21d = "It's difficult for men and women to be friends",
+  Q21e = "Fewer single men today are interested in marriage",
+  Q21f = "Fewer single women today are interested in marriage",
   Q21g = "Marriage is out of date"
 )
 
@@ -71,46 +80,94 @@ plot_question_by_gender <- function(df, question_column, title = NULL) {
     as_factor()
 
   # Use the provided title or default to the column's label attribute
-  plot_title <- if (!is.null(title)) title else attr(data[[question_column]], "label")
+  plot_title <- (if (!is.null(title)) {
+    title
+  } else {
+    attr(data[[question_column]], "label")
+  }) %>%
+    str_wrap(width = 60)
 
   # Generate the plot
   data %>%
     ggplot(aes(x = !!sym(question_column), fill = gender)) +
     geom_bar(position = "dodge") +
     scale_fill_manual(values = c("Female" = "red", "Male" = "blue")) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+      plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+      axis.title.x = element_blank()
+    ) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
     labs(title = plot_title)
 }
 
-plot_question_set_by_gender <- function(df, question_prefix) {
+plot_question_set_by_gender <- function(df, question_prefix, title = NULL) {
   df %>%
     select(contains(question_prefix), gender) %>%
     as_factor() %>%
     mutate(across(where(is.character), as_factor)) %>%
     pivot_longer(cols = contains(question_prefix), names_to = "Question", values_to = "Response", values_drop_na = TRUE) %>%
     mutate(Question = map_chr(Question, ~ question_labels[[.]])) %>%
+    mutate(Question = str_wrap(Question, width = 30)) %>%
     ggplot(aes(x = Response, fill = gender)) +
     geom_bar(position = "dodge", na.rm = TRUE) +
     facet_wrap(~Question, scales = "free_x") +
     scale_fill_manual(values = c("Female" = "red", "Male" = "blue")) +
     theme_minimal() +
     theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
       axis.title.x = element_blank(),
-      axis.title.y = element_blank()
-    )
+      axis.title.y = element_blank(),
+      plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+      strip.text = element_text(size = 12, face = "italic"),
+    ) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) +
+    labs(title = str_wrap(title, width = 60))
 }
 ```
 
-```{r plots}
+**For all of the following, we pre-filter to only consider respondents in the 18-29 age group.**
+
+I think the first question is strangely worded -- if I were dating someone
+but it's not a "committed" relationship, I probably wouldn't say that I was "Single
+or not currently in a relationship",
+but I wouldn't fit into the "In a committed relationship, but not living together" 
+category either.
+
+```{r plots1, fig.width=8, fig.height=6, out.width='80%'}
 plot_question_by_gender(df, "Q1")
+```
+
+The next question is only asked to respondents who said
+they were single or not in a relationship.
+
+```{r plots2, fig.width=8, fig.height=6, out.width='80%'}
 plot_question_by_gender(df, "Q3")
-plot_question_set_by_gender(df, "Q4")
-plot_question_by_gender(df, "Q13")
-plot_question_by_gender(df, "Q14")
-plot_question_by_gender(df, "Q15")
-plot_question_by_gender(df, "Q17")
-plot_question_set_by_gender(df, "Q21")
+```
+
+The next question is only asked to respondents who 
+said they were single or not in a relationship, and additionally
+are not casually dating anybody.
+
+``` {r plots3, fig.width=8, fig.height=6, out.width='80%'}
+plot_question_set_by_gender(df, "Q4", "Please indicate if each of the following is a reason or not a reason why you are not currently looking for a relationship or dates")
+plot_question_by_gender(df, "Q13", "Even if you are not currently using an online dating site or a dating app, have you ever used an online dating site or a dating app?")
+```
+
+The next two questions are only asked to respondents who said
+they had at some point used an online dating site or app.
+
+```{r plots4, fig.width=8, fig.height=6, out.width='80%'}
+plot_question_by_gender(df, "Q14", "Have you ever gone on a date with someone who you met through an online dating website or  dating app?")
+plot_question_by_gender(df, "Q15", "Overall, would you say your OWN personal experiences with online dating sites or dating apps have been…")
+plot_question_by_gender(df, "Q17", "When it comes to dating today, do you think it is...")
+plot_question_set_by_gender(df, "Q21", "Read each statement and please say whether you agree or disagree with each one")
 plot_question_by_gender(df, "Q24")
-plot_question_by_gender(df, "Q25")
+```
+
+The next question is only asked to respondents who said they were not straight/heterosexual.
+
+```{r plots5, fig.width=8, fig.height=6, out.width='80%'}
+plot_question_by_gender(df, "Q25", "How important is being [LESBIAN OR GAY/BISEXUAL/QUEER/ASEXUAL OR AROMANTIC] to you?")
 ```
